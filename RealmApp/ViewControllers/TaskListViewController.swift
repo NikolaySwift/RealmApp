@@ -8,7 +8,7 @@
 import UIKit
 import RealmSwift
 
-class TaskListViewController: UITableViewController {
+final class TaskListViewController: UITableViewController {
 
     private var taskLists: Results<TaskList>!
     private let storageManager = StorageManager.shared
@@ -27,7 +27,7 @@ class TaskListViewController: UITableViewController {
         navigationItem.leftBarButtonItem = editButtonItem
 
         createTempData()
-        taskLists = storageManager.fetchData(TaskList.self)
+        taskLists = storageManager.fetchData(TaskList.self).sorted(byKeyPath: "date")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -44,12 +44,9 @@ class TaskListViewController: UITableViewController {
     }
     
     @IBAction func sortingList(_ sender: UISegmentedControl) {
-//        switch sender.selectedSegmentIndex {
-//        case 0:
-//            
-//        default:
-//            
-//        }
+        let keyPath = sender.selectedSegmentIndex == 0 ? "date" : "title"
+        taskLists = taskLists.sorted(byKeyPath: keyPath)
+        tableView.reloadData()
     }
     
     @objc func addButtonPressed() {
@@ -74,13 +71,13 @@ extension TaskListViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
+        let taskList = taskLists[indexPath.row]
         
         var content = cell.defaultContentConfiguration()
-        let taskList = taskLists[indexPath.row]
         content.text = taskList.title
-        content.secondaryText = taskList.tasks.count.formatted()
+        content.secondaryText = storageManager.isDone(taskList) ? "" : taskList.tasks.count.formatted()
         cell.contentConfiguration = content
-        
+        cell.accessoryType = storageManager.isDone(taskList) ? .checkmark : .none
         return cell
     }
 }
