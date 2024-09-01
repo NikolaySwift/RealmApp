@@ -60,9 +60,7 @@ final class StorageManager {
     }
     
     func isDone(_ taskList: TaskList) -> Bool {
-        !taskList.tasks.contains { task in
-            !task.isComplete
-        }
+        !taskList.tasks.isEmpty && !taskList.tasks.contains { !$0.isComplete }
     }
     
     // MARK: - Tasks
